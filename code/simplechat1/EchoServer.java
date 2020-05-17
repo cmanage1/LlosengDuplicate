@@ -105,5 +105,35 @@ public class EchoServer extends AbstractServer
       System.out.println("ERROR - Could not listen for clients!");
     }
   }
+
+  @Override
+  /**
+   * @param client the connection connected to the client.
+   */
+  protected void clientConnected(ConnectionToClient client) {
+      System.out.println("A client has just connected!");
+  }
+
+
+  @Override
+  /**
+   * @param client the connection with the client.
+   */
+  synchronized protected void clientDisconnected(
+    ConnectionToClient client) {
+        System.out.println("A client has disconnected");
+    }
+
+
+  @Override
+  /**
+   * @param client the client that raised the exception.
+   * @param Throwable the exception thrown.
+   */
+  synchronized protected void clientException(
+  ConnectionToClient client, Throwable exception) {
+      clientDisconnected(client);
+    }
+
 }
 //End of EchoServer class
