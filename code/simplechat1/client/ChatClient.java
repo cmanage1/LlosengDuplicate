@@ -56,7 +56,59 @@ public class ChatClient extends AbstractClient
    */
   public void handleMessageFromServer(Object msg)
   {
-    clientUI.display(msg.toString());
+    if (!isConnected()){
+        try{
+            openConnection();
+        }catch(IOException e) {}
+
+        if (msg.toString().equals("#login")){
+            System.out.println("Beep");
+        }
+    }
+
+
+    if (msg.toString().equals("#quit")){
+          System.out.println("Quitting...");
+          quit();
+
+    }
+
+    else if (msg.toString().equals("#logoff")){
+            try{
+                closeConnection();
+            }
+            catch(IOException e) {}
+             System.out.println("You have successfully logged off");
+    }
+
+    else if (msg.toString().equals("#sethost")){
+          if (!isConnected()){
+              System.out.println("Setting host");
+          }
+          else{
+              System.out.println("Please #logoff first");
+          }
+    }
+
+    else if (msg.toString().equals("#setport")){
+          System.out.println("Setport ");
+    }
+
+    else if (!isConnected()){
+
+    }
+
+    else if (msg.toString().equals("#gethost")){
+          System.out.println("Gethost ");
+    }
+
+    else if (msg.toString().equals("#getport")){
+          System.out.println("Gethost ");
+    }
+
+    else{
+          clientUI.display(msg.toString());
+    }
   }
 
   /**
