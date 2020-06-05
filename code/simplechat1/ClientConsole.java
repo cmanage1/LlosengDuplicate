@@ -42,6 +42,7 @@ public class ClientConsole implements ChatIF
    */
   public ClientConsole(String host, int port)
   {
+
     try
     {
       client= new ChatClient(host, port, this);
@@ -52,6 +53,7 @@ public class ClientConsole implements ChatIF
                 + " Terminating client.");
       System.exit(1);
     }
+
   }
 
 
@@ -104,19 +106,34 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args)
   {
     String host = "";
+    String loginID = "";
     int port = 0;  //The port number
 
-    host = "localhost";
+    //LoginID
+    try{
+        loginID = args[0];
+    }catch(Exception e){
+        System.out.println("No loginID detected, quitting program");
+        System.exit(1);
+    }
 
-    try
-    {
-      port = Integer.parseInt(args[0]);
+    //Port
+    try{
+        port = Integer.parseInt(args[1]);
+    }catch(Exception e){
+        port = 5555;
     }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-      port = 5555;
+
+    //Host
+    try{
+        host = args[2];
+    }catch(Exception e){
+        host = "localhost";
     }
+
+
     ClientConsole chat= new ClientConsole(host, port);
+    client.setInfo("loginID", (Object)loginID );
     chat.accept();  //Wait for console data
   }
 }

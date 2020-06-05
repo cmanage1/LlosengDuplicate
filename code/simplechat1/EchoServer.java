@@ -135,5 +135,30 @@ public class EchoServer extends AbstractServer
       clientDisconnected(client);
     }
 
+    @Override
+    /**
+     * Hook method called when the server stops accepting
+     * connections because an exception has been raised.
+     * The default implementation does nothing.
+     * This method may be overriden by subclasses.
+     *
+     * @param exception the exception raised.
+     */
+    protected void listeningException(Throwable exception) {
+        serverStopped();
+    }
+
+    @Override
+    /**
+     * Hook method called when the server is clased.
+     * The default implementation does nothing. This method may be
+     * overriden by subclasses. When the server is closed while still
+     * listening, serverStopped() will also be called.
+     */
+    protected void serverClosed() {
+        System.out.println("Server has been closed");
+    }
+
+
 }
 //End of EchoServer class

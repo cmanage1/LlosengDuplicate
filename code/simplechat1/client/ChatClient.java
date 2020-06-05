@@ -41,6 +41,7 @@ public class ChatClient extends AbstractClient
   public ChatClient(String host, int port, ChatIF clientUI)
     throws IOException
   {
+
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
     openConnection();
@@ -56,60 +57,8 @@ public class ChatClient extends AbstractClient
    */
   public void handleMessageFromServer(Object msg)
   {
-    if (!isConnected()){
-        try{
-            openConnection();
-        }catch(IOException e) {}
-
-        if (msg.toString().equals("#login")){
-            System.out.println("Beep");
-        }
-    }
-
-
-    if (msg.toString().equals("#quit")){
-          System.out.println("Quitting...");
-          quit();
-
-    }
-
-    else if (msg.toString().equals("#logoff")){
-            try{
-                closeConnection();
-            }
-            catch(IOException e) {}
-             System.out.println("You have successfully logged off");
-    }
-
-    else if (msg.toString().equals("#sethost")){
-          if (!isConnected()){
-              System.out.println("Setting host");
-          }
-          else{
-              System.out.println("Please #logoff first");
-          }
-    }
-
-    else if (msg.toString().equals("#setport")){
-          System.out.println("Setport ");
-    }
-
-    else if (!isConnected()){
-
-    }
-
-    else if (msg.toString().equals("#gethost")){
-          System.out.println("Gethost ");
-    }
-
-    else if (msg.toString().equals("#getport")){
-          System.out.println("Gethost ");
-    }
-
-    else{
-          clientUI.display(msg.toString());
-    }
-  }
+    clientUI.display(msg.toString());
+}
 
   /**
    * This method handles all data coming from the UI
@@ -118,16 +67,126 @@ public class ChatClient extends AbstractClient
    */
   public void handleMessageFromClientUI(String message)
   {
-    try
-    {
-      sendToServer(message);
-    }
-    catch(IOException e)
-    {
-      clientUI.display
-        ("Could not send message to server.  Terminating client.");
-      quit();
-    }
+        if (!isConnected()){ //Handle when logged off
+            switch (message ){
+
+            case "#logoff":
+                System.out.println("Please #login first");
+                break;
+
+            case "#login":
+                try{
+                    openConnection();
+                }
+                catch (Exception E){
+                    System.out.println("Error opening connection");
+                }
+                break;
+
+            case "#quit": //DONE
+                System.out.println("Quitting...");
+                quit();
+                break;
+
+            default:
+                if ( message.indexOf("#sethost") == 0 ){
+                    String newHost= new String();
+                    int i = 0;
+
+                    for (String word : message.split(" ")) {
+                        if (i == 1){
+                            try{
+                                newHost = word.toString();
+                            }catch(Exception e){}
+                        }
+                        i++;
+                    }
+                    if (newHost!= null){
+                        setHost(newHost);
+                        System.out.println("Host changed to: " + getHost());
+                    }else System.out.println("Command should be in format #setport <port>");
+                }
+
+                else if ( message.indexOf("#setport") == 0 ){
+                    int newPort = 0;
+                    int i = 0;
+
+                    for (String word : message.split(" ")) {
+                        if (i == 1){
+                            try{
+                                newPort = Integer.parseInt(word);
+                            }catch(Exception e){
+                                System.out.println("Please make sure <port> is an integer");
+                            }
+                        }
+                        i++;
+                    }
+                    if (newPort != 0){
+                        setPort(newPort);
+                        System.out.println("Port changed to: " + getPort());
+                    }
+                    else System.out.println("Command should be in format #setport <port>");
+                }
+
+                //Handle invalid commands
+                else if ( message.indexOf('#') == 0 ){
+                    System.out.println("Command not found");
+                }
+            }
+        }else{
+            switch (message){
+                case "#quit": //DONE
+                    System.out.println("Quitting...");
+                    quit();
+                    break;
+
+                case "#logoff": //DONE
+                    try{
+                        closeConnection();
+                    }
+                    catch(IOException e) {}
+                    break;
+
+                case "#login":
+                    System.out.println("Please #logoff first");
+                    break;
+
+                case "#gethost": //DONE
+                    System.out.println( getHost() );
+                    break;
+
+                case "#getport": //DONE
+                    System.out.println( getPort() );
+                    break;
+
+                default:
+                    if ( message.indexOf("#sethost") == 0 ){
+                        System.out.println("Please #logoff first");
+                        break;
+                    }
+
+                    else if ( message.indexOf("#setport") == 0 ){
+                        System.out.println("Please #logoff first");
+                        break;
+                    }
+
+                    else if ( message.indexOf('#') == 0 ){
+                        System.out.println("Command not found");
+                    }
+                    else{
+                        try{
+                        sendToServer(message);
+                        }
+                        catch(IOException e)
+                        {
+                            System.out.println( e  );
+                            clientUI.display
+                            ("Could not send message to server.  Terminating client.");
+                            quit();
+                      }
+                  }
+              }
+          }
   }
 
   /**
@@ -149,8 +208,25 @@ public class ChatClient extends AbstractClient
   *            the exception raised.
   */
  protected void connectionException(Exception exception) {
-    System.out.println("Server has shut down. " + "Quitting.");
-    System.exit(1);
+    System.out.println("Server has shut down. Quitting");
+    quit();
  }
+
+
+  @Override
+ protected void connectionClosed() {
+    System.out.println("Connection Closed");
+ }
+
+ @Override
+ /**
+  * Hook method called after a connection has been established. The default
+  * implementation does nothing. It may be overridden by subclasses to do
+  * anything they wish.
+  */
+ protected void connectionEstablished() {
+    System.out.println("Connection Established");
+}
+
 }
 //End of ChatClient class
