@@ -27,6 +27,8 @@ public class ChatClient extends AbstractClient
    */
   ChatIF clientUI;
 
+  public String loginID;
+
 
   //Constructors ****************************************************
 
@@ -44,7 +46,11 @@ public class ChatClient extends AbstractClient
 
     super(host, port); //Call the superclass constructor
     this.clientUI = clientUI;
-    openConnection();
+    try{
+        openConnection();
+    }catch (Exception e){
+        System.out.println("Cannot open connection, awaiting command");
+    }
   }
 
 
@@ -67,6 +73,7 @@ public class ChatClient extends AbstractClient
    */
   public void handleMessageFromClientUI(String message)
   {
+
         if (!isConnected()){ //Handle when logged off
             switch (message ){
 
@@ -74,18 +81,20 @@ public class ChatClient extends AbstractClient
                 System.out.println("Please #login first");
                 break;
 
-            case "#login":
-                try{
-                    openConnection();
-                }
-                catch (Exception E){
-                    System.out.println("Error opening connection");
-                }
+            case "#quit": //DONE
+                quit();
                 break;
 
-            case "#quit": //DONE
-                System.out.println("Quitting...");
-                quit();
+            case "#login":
+                System.out.println("Please #logoff first");
+                break;
+
+            case "#gethost": //DONE
+                System.out.println( getHost() );
+                break;
+
+            case "#getport": //DONE
+                System.out.println( getPort() );
                 break;
 
             default:
@@ -128,15 +137,35 @@ public class ChatClient extends AbstractClient
                     else System.out.println("Command should be in format #setport <port>");
                 }
 
+                else if ( message.indexOf("#login") == 0 ){
+                    String newHost= new String();
+                    int i = 0;
+
+                    try{
+                        openConnection();
+                        sendToServer(message);
+                    }
+                    catch(IOException e)
+                    {
+                        System.out.println( e  );
+                        clientUI.display
+                        ("Could not send message to server.  Terminating client.");
+                        quit();
+                  }
+              }
+
                 //Handle invalid commands
                 else if ( message.indexOf('#') == 0 ){
                     System.out.println("Command not found");
+                }
+
+                else{
+                    System.out.println("WARNING - Server has stopped listening for connections.");
                 }
             }
         }else{
             switch (message){
                 case "#quit": //DONE
-                    System.out.println("Quitting...");
                     quit();
                     break;
 
@@ -160,7 +189,21 @@ public class ChatClient extends AbstractClient
                     break;
 
                 default:
-                    if ( message.indexOf("#sethost") == 0 ){
+                //Just to setLoginID in ChatClient
+                    if ( message.indexOf("setlogin") == 0 ){
+                        int j = 0;
+                        for (String word : message.split(" ")) {
+                            if (j == 1){
+                                try{
+                                    loginID = word;
+                                }catch(Exception e){
+                                    System.out.println(e);
+                                }
+                            }
+                            j++;
+                       }
+                    }
+                    else if ( message.indexOf("#sethost") == 0 ){
                         System.out.println("Please #logoff first");
                         break;
                     }
@@ -170,6 +213,7 @@ public class ChatClient extends AbstractClient
                         break;
                     }
 
+                    //Handle invalid commands
                     else if ( message.indexOf('#') == 0 ){
                         System.out.println("Command not found");
                     }
@@ -208,8 +252,8 @@ public class ChatClient extends AbstractClient
   *            the exception raised.
   */
  protected void connectionException(Exception exception) {
-    System.out.println("Server has shut down. Quitting");
-    quit();
+    System.out.println("SERVER SHUTTING DOWN! DISCONNECTING!");
+    System.out.println("Abnormal termination of connection.");
  }
 
 

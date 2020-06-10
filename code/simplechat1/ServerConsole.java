@@ -49,23 +49,21 @@ public class ServerConsole implements ChatIF{
         switch (message){
 
             case "#quit": //quit gracefully
-                System.out.println("Quitting...");
                 server.stopListening();
                 try{
                     server.close();
                 }catch(Exception e){
-                    System.out.println("Unable to close");
+                    System.out.println("Unable to close: " + e);
                 }
                 System.exit(1);
                 break;
 
             case "#stop": //stop listening
-                System.out.println("Stopping listening...");
                 server.stopListening();
+                server.sendToAllClients("WARNING - Server has stopped listening for connections.");
                 break;
 
             case "#close": //disconnect and stop listening
-                System.out.println("Disconnecting and Stopping listening ");
                 try{
                     server.close();
                 }catch(Exception e){
@@ -75,10 +73,16 @@ public class ServerConsole implements ChatIF{
 
             case "#getport":
                 System.out.println( server.getPort() );
+                break;
 
             default:
                 if (server.isListening()){ //if sever is still listening
-                    if ( message.indexOf("#setport") == 0 ){
+                    if ( message.indexOf("#login") == 0 ){
+                        System.out.println("Please #stop first");
+                        break;
+                    }
+
+                    else if ( message.indexOf("#setport") == 0 ){
                         System.out.println("Please #stop first");
                         break;
                     }
@@ -93,7 +97,6 @@ public class ServerConsole implements ChatIF{
                 }
 
                 else{ //When server has stopped listening
-
                     if ( message.indexOf("#setport") == 0 ){
                         int newPort = 0;
                         int i = 0;

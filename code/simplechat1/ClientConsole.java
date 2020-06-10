@@ -54,6 +54,7 @@ public class ClientConsole implements ChatIF
       System.exit(1);
     }
 
+
   }
 
 
@@ -90,11 +91,23 @@ public class ClientConsole implements ChatIF
    *
    * @param message The string to be displayed.
    */
-  public void display(String message)
-  {
-    System.out.println("> " + message);
+  public void display(String message){
+
+      System.out.println("> "+message);
   }
 
+  private void sendID(String ID){
+        try{
+            //To send #login to server side for setInfo
+            client.sendToServer("#login " + ID);
+
+            //Just to setLoginID in ChatClient
+            client.handleMessageFromClientUI("setlogin "+ID);
+
+        }catch( Exception e){
+            //System.out.println(e);
+        }
+  }
 
   //Class methods ***************************************************
 
@@ -111,29 +124,31 @@ public class ClientConsole implements ChatIF
 
     //LoginID
     try{
-        loginID = args[0];
+        loginID = args[0].toString();
     }catch(Exception e){
-        System.out.println("No loginID detected, quitting program");
+        System.out.println("ERROR - No login ID specified.  Connection aborted.");
         System.exit(1);
-    }
-
-    //Port
-    try{
-        port = Integer.parseInt(args[1]);
-    }catch(Exception e){
-        port = 5555;
     }
 
     //Host
     try{
-        host = args[2];
+        host = args[1];
     }catch(Exception e){
         host = "localhost";
     }
 
+    //Port
+    try{
+        port = Integer.parseInt(args[2]);
+    }catch(Exception e){
+        port = 5555;
+    }
+
+
+
 
     ClientConsole chat= new ClientConsole(host, port);
-    client.setInfo("loginID", (Object)loginID );
+    chat.sendID(args[0].toString());
     chat.accept();  //Wait for console data
   }
 }

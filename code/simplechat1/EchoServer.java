@@ -48,8 +48,37 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+
+    if (msg.toString().indexOf("#login") == 0 && client.getInfo("isFirstMessage") == null  ){
+        System.out.println("A new client is attempting to connect to the server.");
+        System.out.println("Message received: " + msg + " from " + client.getInfo("LoginID"));
+        int j = 0;
+        for (String word : msg.toString().split(" ")) {
+            if (j == 1){
+                try{
+                    client.setInfo("LoginID", (Object)word);
+                    this.sendToAllClients( (Object)( client.getInfo("LoginID") + " has logged on"));
+                    System.out.println(client.getInfo("LoginID") + " has logged on");
+                    client.setInfo("isFirstMessage", (Object)"NO");
+                }catch(Exception e){
+                    System.out.println(e);
+                }
+            }
+            j++;
+        }
+    }else if (msg.toString().indexOf("#login") == 0 && client.getInfo("isFirstMessage").toString() != null){
+        try{
+            client.sendToClient("Error, login is only allowed as the first message");
+            client.close();
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
+    else {
+        System.out.println("Message received: " + msg + " from "+ client.getInfo("LoginID"));
+        this.sendToAllClients(( Object)(client.getInfo("LoginID") +" > "+ msg.toString()) );
+    }
+
   }
 
   /**
@@ -111,7 +140,7 @@ public class EchoServer extends AbstractServer
    * @param client the connection connected to the client.
    */
   protected void clientConnected(ConnectionToClient client) {
-      System.out.println("A client has just connected!");
+      //System.out.println("A client has just connected!");
   }
 
 
@@ -119,9 +148,9 @@ public class EchoServer extends AbstractServer
   /**
    * @param client the connection with the client.
    */
-  synchronized protected void clientDisconnected(
-    ConnectionToClient client) {
-        System.out.println("A client has disconnected");
+  synchronized protected void clientDisconnected(ConnectionToClient client) {
+        sendToAllClients( client.getInfo("LoginID").toString() +  " has disconnected");
+        System.out.println( client.getInfo("LoginID").toString() +  " has disconnected");
     }
 
 
@@ -156,7 +185,7 @@ public class EchoServer extends AbstractServer
      * listening, serverStopped() will also be called.
      */
     protected void serverClosed() {
-        System.out.println("Server has been closed");
+        //System.out.println("Server has been closed");
     }
 
 
